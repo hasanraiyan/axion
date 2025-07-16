@@ -198,6 +198,7 @@
 
             // --- Live System Status Log ---
             const logList = document.getElementById('status-log-list');
+            const emailInput = document.getElementById('email-input'); // Get email input here to use later
             const initialLogMessages = [
                 { text: "Bootstrapping Axion Core...", icon: "loader", color: "text-subtle-text" },
                 { text: "Core services online", icon: "check-circle", color: "text-success-green" },
@@ -233,6 +234,8 @@
             const logInterval = setInterval(() => {
                 if (messageIndex >= initialLogMessages.length) {
                     clearInterval(logInterval);
+                    // Focus the email input field after the final log message.
+                    emailInput.focus(); 
                     return;
                 }
                 addLogEntry(initialLogMessages[messageIndex]);
@@ -242,7 +245,6 @@
             // --- Waitlist Form Submission Logic with Formspree ---
             const waitlistForm = document.getElementById('waitlist-form');
             const waitlistContainer = document.getElementById('waitlist-container');
-            const emailInput = document.getElementById('email-input');
             const submitButton = document.getElementById('submit-button');
 
             waitlistForm.addEventListener('submit', async (e) => {
