@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axion AI ⚙️ System Online</title>
+
+    <!-- Tailwind CSS - Using the Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter for UI, Roboto Mono for the status log -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- GSAP & Lucide Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    
+    <style>
+        body {
+            background-color: #050505;
+            font-family: 'Inter', sans-serif;
+            cursor: crosshair;
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        main {
+            position: relative;
+            z-index: 1;
+        }
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            --glow-color: #00A3FF; /* A slightly more vibrant blue */
+        }
+        .btn-glow:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle closest-side, var(--glow-color), transparent);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            opacity: 0.25;
+            border-radius: 50%;
+        }
+        .btn-glow:hover:before {
+            width: 300%;
+            height: 300%;
+        }
+        /* Custom scrollbar for the status log */
+        .status-log::-webkit-scrollbar {
+            width: 4px;
+        }
+        .status-log::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .status-log::-webkit-scrollbar-thumb {
+            background: #00A3FF;
+            border-radius: 4px;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'mono': ['"Roboto Mono"', 'monospace'],
+                    },
+                    colors: {
+                        'brand-blue': '#00A3FF',
+                        'dark-bg': '#050505',
+                        'light-text': '#EAEAEA',
+                        'subtle-text': '#888888',
+                        'success-green': '#2ECC71',
+                        'warning-yellow': '#F1C40F',
+                        'error-red': '#E74C3C',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark-bg text-light-text selection:bg-brand-blue selection:text-white overflow-hidden">
+    
+    <canvas id="particle-canvas"></canvas>
+
+    <main class="min-h-screen w-full flex items-center p-8 lg:p-16">
+        <div class="content-container w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            
+            <!-- Left Panel: Main Content -->
+            <div class="flex flex-col space-y-8">
+                <header class="content-reveal flex flex-col space-y-4">
+                    <h1 class="text-5xl lg:text-7xl font-black tracking-tighter">
+                        Axion AI<span class="text-brand-blue">.</span>
+                    </h1>
+                    <p class="text-xl lg:text-2xl text-subtle-text tracking-tight">
+                        Intelligence, Evolved. We are building the foundational layer for the next paradigm of artificial intelligence.
+                    </p>
+                </header>
+
+                <div id="waitlist-container" class="content-reveal w-full">
+                    <p class="mb-4 text-sm text-subtle-text">Our platform is in private alpha. Join the waitlist for exclusive early access.</p>
+                    <form id="waitlist-form" class="relative flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-grow">
+                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 text-subtle-text w-5 h-5 pointer-events-none"></i>
+                            <input id="email-input" type="email" name="email" placeholder="your.email@address.com" required class="w-full h-14 pl-12 pr-4 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none transition-all duration-300 placeholder:text-subtle-text">
+                        </div>
+                        <button id="submit-button" type="submit" class="btn-glow h-14 bg-brand-blue text-white font-bold px-8 rounded-lg transition-transform duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
+                            <span>Join Waitlist</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <footer class="content-reveal flex items-center space-x-6 pt-8">
+                    <span class="text-sm text-subtle-text">Follow our progress:</span>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-subtle-text hover:text-white transition-colors" aria-label="Twitter"><i data-lucide="twitter"></i></a>
+                        <a href="#" class="text-subtle-text hover:text-white transition-colors" aria-label="GitHub"><i data-lucide="github"></i></a>
+                        <a href="#" class="text-subtle-text hover:text-white transition-colors" aria-label="LinkedIn"><i data-lucide="linkedin"></i></a>
+                    </div>
+                </footer>
+            </div>
+
+            <!-- Right Panel: System Status Log -->
+            <div class="status-panel-reveal h-[400px] bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="relative flex h-3 w-3">
+                        <span id="status-indicator-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-green opacity-75"></span>
+                        <span id="status-indicator-dot" class="relative inline-flex rounded-full h-3 w-3 bg-success-green"></span>
+                    </span>
+                    <h3 class="font-mono text-sm uppercase tracking-widest text-subtle-text">System Status</h3>
+                </div>
+                <ul id="status-log-list" class="status-log font-mono text-sm space-y-2 text-slate-400 overflow-y-auto flex-grow pr-2">
+                    <!-- Log entries will be injected here by JavaScript -->
+                </ul>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // --- Interactive Particle Network ---
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let particlesArray;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let mouse = { x: null, y: null, radius: (canvas.height / 100) * (canvas.width / 100) };
+
+            window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+            window.addEventListener('mouseout', () => { mouse.x = undefined; mouse.y = undefined; });
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                mouse.radius = (canvas.height / 100) * (canvas.width / 100);
+                initParticles();
+            });
+
+            class Particle {
+                constructor(x,y,dirX,dirY,size,color) { this.x=x; this.y=y; this.directionX=dirX; this.directionY=dirY; this.size=size; this.color=color; }
+                draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2,false); ctx.fillStyle=this.color; ctx.fill(); }
+                update() {
+                    if(this.x>canvas.width||this.x<0) this.directionX=-this.directionX;
+                    if(this.y>canvas.height||this.y<0) this.directionY=-this.directionY;
+                    let dx=mouse.x-this.x; let dy=mouse.y-this.y; let distance=Math.sqrt(dx*dx+dy*dy);
+                    if(distance<mouse.radius+this.size){if(mouse.x<this.x&&this.x<canvas.width-this.size*10)this.x+=5;if(mouse.x>this.x&&this.x>this.size*10)this.x-=5;if(mouse.y<this.y&&this.y<canvas.height-this.size*10)this.y+=5;if(mouse.y>this.y&&this.y>this.size*10)this.y-=5;}
+                    this.x+=this.directionX; this.y+=this.directionY; this.draw();
+                }
+            }
+            function initParticles() {
+                particlesArray=[]; let num=(canvas.height*canvas.width)/9000;
+                for(let i=0; i<num; i++){ let size=(Math.random()*2)+1; let x=(Math.random()*((innerWidth-size*2)-(size*2))+size*2); let y=(Math.random()*((innerHeight-size*2)-(size*2))+size*2); let dirX=(Math.random()*0.4)-0.2; let dirY=(Math.random()*0.4)-0.2; let color='rgba(255,255,255,0.2)'; particlesArray.push(new Particle(x,y,dirX,dirY,size,color)); }
+            }
+            function connectParticles() {
+                let opacity=1;
+                for(let a=0;a<particlesArray.length;a++){for(let b=a;b<particlesArray.length;b++){let dist=Math.pow(particlesArray[a].x-particlesArray[b].x,2)+Math.pow(particlesArray[a].y-particlesArray[b].y,2);if(dist<(canvas.width/7)*(canvas.height/7)){opacity=1-(dist/20000);ctx.strokeStyle=`rgba(0,163,255,${opacity*0.3})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(particlesArray[a].x,particlesArray[a].y);ctx.lineTo(particlesArray[b].x,particlesArray[b].y);ctx.stroke();}}}
+            }
+            function animateParticles() { requestAnimationFrame(animateParticles); ctx.clearRect(0,0,innerWidth,innerHeight); for(let i=0;i<particlesArray.length;i++){particlesArray[i].update();} connectParticles(); }
+            
+            initParticles();
+            animateParticles();
+
+            // --- Live System Status Log ---
+            const logList = document.getElementById('status-log-list');
+            const initialLogMessages = [
+                { text: "Bootstrapping Axion Core...", icon: "loader", color: "text-subtle-text" },
+                { text: "Core services online", icon: "check-circle", color: "text-success-green" },
+                { text: "Connecting to neural subnet...", icon: "loader", color: "text-subtle-text" },
+                { text: "Subnet handshake successful", icon: "check-circle", color: "text-success-green" },
+                { text: "Loading cognitive models...", icon: "loader", color: "text-subtle-text" },
+                { text: "Model 'Helios-7B' loaded", icon: "check-circle", color: "text-success-green" },
+                { text: "Model 'Selene-2A' loaded", icon: "check-circle", color: "text-success-green" },
+                { text: "Calibrating quantum tensors...", icon: "loader", color: "text-subtle-text" },
+                { text: "Calibration complete", icon: "check-circle", color: "text-success-green" },
+                { text: "All systems nominal. Awaiting input.", icon: "zap", color: "text-brand-blue" }
+            ];
+
+            function addLogEntry(msg, delay = 0) {
+                setTimeout(() => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center gap-3 opacity-0';
+                    const iconEl = document.createElement('i');
+                    iconEl.setAttribute('data-lucide', msg.icon);
+                    iconEl.className = `w-4 h-4 ${msg.color} ${msg.icon === 'loader' ? 'animate-spin' : ''}`;
+                    const textSpan = document.createElement('span');
+                    textSpan.innerHTML = msg.text;
+                    li.appendChild(iconEl);
+                    li.appendChild(textSpan);
+                    logList.appendChild(li);
+                    lucide.createIcons({ nodes: [li] });
+                    gsap.to(li, { opacity: 1, duration: 0.5, ease: 'power2.out' });
+                    logList.scrollTop = logList.scrollHeight;
+                }, delay);
+            }
+
+            let messageIndex = 0;
+            const logInterval = setInterval(() => {
+                if (messageIndex >= initialLogMessages.length) {
+                    clearInterval(logInterval);
+                    return;
+                }
+                addLogEntry(initialLogMessages[messageIndex]);
+                messageIndex++;
+            }, 1200);
+
+            // --- Waitlist Form Submission Logic with Formspree ---
+            const waitlistForm = document.getElementById('waitlist-form');
+            const waitlistContainer = document.getElementById('waitlist-container');
+            const emailInput = document.getElementById('email-input');
+            const submitButton = document.getElementById('submit-button');
+
+            waitlistForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(waitlistForm);
+                const email = emailInput.value;
+                
+                emailInput.disabled = true;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>Submitting...</span>';
+                lucide.createIcons({ nodes: [submitButton] });
+
+                addLogEntry({
+                    text: `New waitlist request from <span class="text-warning-yellow">${email}</span>`,
+                    icon: 'user-plus',
+                    color: 'text-subtle-text'
+                });
+
+                try {
+                    // Using the provided Formspree endpoint
+                    const response = await fetch('https://formspree.io/f/xgvzezdq', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        addLogEntry({
+                            text: `Successfully added to waitlist.`,
+                            icon: 'check-circle',
+                            color: 'text-success-green'
+                        });
+
+                        gsap.to(waitlistContainer, {
+                            opacity: 0,
+                            height: waitlistContainer.offsetHeight,
+                            duration: 0.5,
+                            ease: 'power2.in',
+                            onComplete: () => {
+                                waitlistContainer.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center text-center p-4 bg-white/5 border border-white/10 rounded-lg">
+                                        <i data-lucide="party-popper" class="w-12 h-12 text-brand-blue mb-4"></i>
+                                        <h3 class="text-xl font-bold mb-2">You're on the list!</h3>
+                                        <p class="text-subtle-text">Thank you for joining the Axion AI waitlist. We'll be in touch soon.</p>
+                                    </div>
+                                `;
+                                lucide.createIcons({ nodes: [waitlistContainer] });
+                                gsap.fromTo(waitlistContainer, { opacity: 0, height: 0 }, { opacity: 1, height: 'auto', duration: 0.5, ease: 'power2.out' });
+                            }
+                        });
+                    } else {
+                        throw new Error('Network response was not ok.');
+                    }
+                } catch (error) {
+                    console.error("Form submission error: ", error);
+                    addLogEntry({
+                        text: `Error: Failed to submit form. Please try again.`,
+                        icon: 'alert-triangle',
+                        color: 'text-error-red'
+                    });
+                    emailInput.disabled = false;
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<span>Join Waitlist</span><i data-lucide="arrow-right" class="w-5 h-5"></i>';
+                    lucide.createIcons({ nodes: [submitButton] });
+                }
+            });
+
+            // --- GSAP Entrance Animation ---
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.5 });
+            tl.from(".content-reveal", { duration: 1, y: 30, opacity: 0, stagger: 0.2 })
+              .from(".status-panel-reveal", { duration: 1, scale: 0.95, opacity: 0 }, "-=0.8");
+              
+        });
+    </script>
+</body>
+</html>
